@@ -1,18 +1,42 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(SolutionDir)\Directory.props" />
-  
+  <Import Project="..\Directory.props" />
   <PropertyGroup>
     <AssemblyName>DuplicantAgent</AssemblyName>
-    <Version>1.0.0</Version>
     <TargetFramework>net471</TargetFramework>
     <OutputType>Library</OutputType>
-    <OutputPath>bin\$(Configuration)</OutputPath>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <!-- ILRepack配置 -->
+    <EnableILRepack>true</EnableILRepack>
   </PropertyGroup>
 
+  <!-- 定义需要ILRepack合并的DLL -->
   <ItemGroup>
-    <!-- 在这里可以添加项目特定的引用 -->
-  </ItemGroup>
+    <ILRepackPackage Include="PLib" />
+    <ILRepackPackage Include="OllamaSharp" />
 
-  <Import Project="$(SolutionDir)\Directory.targets" />
+    <!-- 以下是可选的，如果您需要合并一些特定的System DLL -->
+    <!-- <ILRepackPackage Include="System.Runtime.CompilerServices.Unsafe" /> -->
+    <!-- 添加更多包 -->
+  </ItemGroup>
+  <!-- 添加ILRepack包引用 -->
+  <ItemGroup>
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.40">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="PLib" Version="4.17.1" />
+    <PackageReference Include="OllamaSharp" Version="5.1.14" />
+    
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ConduiPatches\" />
+    <Folder Include="CritterPatches\" />
+    <Folder Include="GamePatches\" />
+    <Folder Include="Metrics\" />
+    <Folder Include="SensorPatches\" />
+    <Folder Include="VisualPatches\" />
+  <Folder Include="images\" />
+  </ItemGroup>
+  
+  <Import Project="..\Directory.targets" />
 </Project>

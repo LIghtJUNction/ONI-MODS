@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DuplicantAgent")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+300df976e653564650446de79ed52005611f7d9b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9d56c7f546722dd437e4ba5c98b236fde5b14b78")]
 [assembly: System.Reflection.AssemblyProductAttribute("DuplicantAgent")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DuplicantAgent")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

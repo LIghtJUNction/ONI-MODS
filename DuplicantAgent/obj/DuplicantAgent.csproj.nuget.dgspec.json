@@ -49,6 +49,22 @@
       "frameworks": {
         "net471": {
           "targetAlias": "net471",
+          "dependencies": {
+            "ILRepack.Lib.MSBuild.Task": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.0.40, )"
+            },
+            "OllamaSharp": {
+              "target": "Package",
+              "version": "[5.1.14, )"
+            },
+            "PLib": {
+              "target": "Package",
+              "version": "[4.17.1, )"
+            }
+          },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203\\RuntimeIdentifierGraph.json"
         }
       }

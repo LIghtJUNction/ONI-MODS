@@ -1,25 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- 构建后操作 - 复制模组文件到游戏目录 -->
-  <Target Name="AfterBuild">
+    <!-- ILRepack合并目标 - 在AfterBuild之前执行 -->  <Target Name="ILRepackTarget" AfterTargets="Build" Condition="'$(EnableILRepack)' == 'true'">    <!-- ILRepack任务的输入和输出目录 -->
     <PropertyGroup>
-      <ModFolder>$(ModOutputPath)</ModFolder>
+      <ILRepackWorkingDirectory>$(TargetDir)</ILRepackWorkingDirectory>
+      <ILRepackMainAssembly>$(TargetPath)</ILRepackMainAssembly>
+    </PropertyGroup><!-- 收集所有需要合并的DLL -->
+    <ItemGroup>
+      <!-- 根据定义的ILRepackPackage找到对应的DLL -->
+      <ILRepackAssemblies Include="@(ILRepackPackage->'$(ILRepackWorkingDirectory)%(Identity).dll')" 
+                          Condition="'%(Identity)' != 'mscorlib'" />
+      
+      <!-- 记录排除的DLL -->
+      <ExcludeLoggingItems Include="mscorlib.dll" />
+    </ItemGroup>
+
+    <!-- 显示合并信息 -->
+    <Message Text="ILRepack - 合并DLL: 主程序集=$(ILRepackMainAssembly)" Importance="high" />
+    <Message Text="ILRepack - 合并DLL: @(ILRepackAssemblies->'%(Filename)%(Extension)', ', ')" Importance="high" />
+    <Message Text="ILRepack - 自动排除的DLL: @(ExcludeLoggingItems->'%(Identity)', ', ')" Importance="high" />    
+    
+    <!-- 执行ILRepack任务：直接输出到目标路径，无需临时文件 -->
+    <ILRepack 
+      Parallel="true"
+      InputAssemblies="$(ILRepackMainAssembly);@(ILRepackAssemblies)"
+      TargetKind="Dll"
+      OutputFile="$(ILRepackMainAssembly)"
+      Internalize="true"
+      InternalizeExclude="nothing"
+      XmlDocumentation="true"
+      LibraryPath="$(DllFolder);$(TargetDir)"
+      Condition="'@(ILRepackAssemblies)' != ''" />
+
+    <Message Text="ILRepack - DLL合并完成" Importance="high" />  </Target>    <!-- 构建后操作 - 复制模组文件到游戏目录 -->  <Target Name="CopyModFiles">    <PropertyGroup>      <!-- 确保ModFolder有值，如果ModOutputPath为空则提供备选路径 -->
+      <ModFolder Condition="'$(ModOutputPath)' != ''">$(ModOutputPath)</ModFolder>
+      <ModFolder Condition="'$(ModOutputPath)' == ''">$(LocalAppData)\Klei\OxygenNotIncluded\mods\Dev\$(AssemblyName)</ModFolder>
+      <!-- 输出ModFolder值，方便调试 -->
+      <TempModFolder>$(ModFolder)</TempModFolder>
     </PropertyGroup>
+    
+    <!-- 显示调试信息 -->
+    <Message Text="使用模组输出路径: $(TempModFolder)" Importance="high" />
     
     <!-- 创建模组目录结构 -->
     <MakeDir Directories="$(ModFolder)" Condition="!Exists('$(ModFolder)')" />
-    <MakeDir Directories="$(ModFolder)\bin" Condition="!Exists('$(ModFolder)\bin')" />
+    
+    <!-- 检查yaml文件是否存在 -->
+    <Message Text="检查yaml文件: $(ProjectDir)mod_info.yaml 存在:$(Exists('$(ProjectDir)mod_info.yaml'))" Importance="high" />
+    <Message Text="检查yaml文件: $(ProjectDir)mod.yaml 存在:$(Exists('$(ProjectDir)mod.yaml'))" Importance="high" />
     
     <!-- 复制输出文件 -->
     <ItemGroup>
       <ModFiles Include="$(TargetDir)\$(AssemblyName).dll" />
-      <ModFiles Include="$(ProjectDir)\mod_info.yaml" Condition="Exists('$(ProjectDir)\mod_info.yaml')" />
-      <ModFiles Include="$(ProjectDir)\mod.yaml" Condition="Exists('$(ProjectDir)\mod.yaml')" />
+      <ModFiles Include="$(ProjectDir)mod_info.yaml" Condition="Exists('$(ProjectDir)mod_info.yaml')" />
+      <ModFiles Include="$(ProjectDir)mod.yaml" Condition="Exists('$(ProjectDir)mod.yaml')" />
     </ItemGroup>
     
-    <!-- 复制模组所需的文件到模组目录 -->
-    <Copy SourceFiles="@(ModFiles)" DestinationFolder="$(ModFolder)\bin\" />
-    
+    <!-- 显示要复制的文件 -->
+    <Message Text="将复制文件: @(ModFiles->'%(FullPath)', ', ')" Importance="high" />
+      <!-- 复制模组所需的文件到模组目录 -->
+    <Copy SourceFiles="@(ModFiles)" DestinationFolder="$(ModFolder)" />
+      <!-- 显示复制结果 -->
+    <Message Text="已将DLL复制到: $(ModFolder)\$(AssemblyName).dll" Importance="high" Condition="Exists('$(ModFolder)\$(AssemblyName).dll')" />
     <!-- 复制其它模组资源 -->
     <ItemGroup>
       <ModAssets Include="$(ProjectDir)\assets\**\*.*" Condition="Exists('$(ProjectDir)\assets')" />
@@ -37,8 +78,23 @@
       <ConfigFiles Include="$(ProjectDir)\config\**\*.*" Condition="Exists('$(ProjectDir)\config')" />
     </ItemGroup>
     <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(ModFolder)\config\%(RecursiveDir)" Condition="@(ConfigFiles) != ''" />
-    
+
+    <!-- 显示最终结果信息 -->
     <Message Text="已将模组文件复制到: $(ModFolder)" Importance="high" />
+    <Message Text="如果文件未正确复制，请检查以下变量值:" Importance="high" />
+    <Message Text="AssemblyName = $(AssemblyName)" Importance="high" />
+    <Message Text="ModOutputPath = $(ModOutputPath)" Importance="high" />
+    <Message Text="TargetDir = $(TargetDir)" Importance="high" />
+  </Target>    <!-- 构建后操作 - 复制模组文件到游戏目录（常规情况） -->  <!-- 构建后操作 - 复制模组文件到游戏目录（常规情况） -->
+  <Target Name="AfterBuildNormal" AfterTargets="Build" Condition="'$(EnableILRepack)' != 'true'">
+    <!-- 未启用ILRepack时直接在Build后执行 -->
+    <CallTarget Targets="CopyModFiles" />
+  </Target>
+  
+  <!-- 构建后操作 - 复制模组文件到游戏目录（启用ILRepack的情况） -->
+  <Target Name="AfterBuildWithILRepack" AfterTargets="ILRepackTarget" Condition="'$(EnableILRepack)' == 'true'">
+    <!-- ILRepack启用时在ILRepack后执行 -->
+    <CallTarget Targets="CopyModFiles" />
   </Target>
   
   <!-- 清理目标 -->

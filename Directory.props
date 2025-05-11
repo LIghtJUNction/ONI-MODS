@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- 用户级别配置 - 可根据自己的环境修改 -->
-  
-  <!-- 游戏安装路径 -->
-  <!-- 下面是Steam的默认安装路径, 根据您的实际安装位置进行修改 -->  <PropertyGroup>
+  <!-- 用户级别配置 - 可根据自己的环境修改 -->    <!-- 游戏安装路径 -->
+  <!-- 下面是Steam的默认安装路径, 根据您的实际安装位置进行修改 -->  
+  <PropertyGroup>
     <GameFolder Condition=" '$(GameFolder)' == '' ">G:\LIghtJUNction\steam\SteamLibrary\steamapps\common\OxygenNotIncluded</GameFolder>
-    <DllFolder Condition=" '$(DllFolder)' == '' ">$(GameFolder)\OxygenNotIncluded_Data\Managed</DllFolder>
-
-    <!-- 模组输出路径 - 本地测试用 -->
-    <ModOutputPath Condition=" '$(ModOutputPath)' == '' ">$(USERPROFILE)\Documents\Klei\OxygenNotIncluded\mods\Dev\$(AssemblyName)</ModOutputPath>
+    <DllFolder Condition=" '$(DllFolder)' == '' ">$(GameFolder)\OxygenNotIncluded_Data\Managed</DllFolder>    <!-- 模组输出路径 - 本地测试用 -->
+    <ModOutputPath Condition=" '$(ModOutputPath)' == '' ">C:\Users\light\OneDrive\文档\Klei\OxygenNotIncluded\mods\Dev\$(AssemblyName)</ModOutputPath>
     
     <!-- 模组加载器位置 -->
     <ModLoaderPath Condition=" '$(ModLoaderPath)' == '' ">$(GameFolder)\OxygenNotIncluded_Data\Managed\Harmony.dll</ModLoaderPath>
   </PropertyGroup>
-
   <!-- 常用引用 -->
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -38,6 +34,92 @@
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>$(DllFolder)\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>      
+    
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(DllFolder)\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+      <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(DllFolder)\Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- System相关引用 -->
+    <Reference Include="System">
+      <HintPath>$(DllFolder)\System.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition">
+      <HintPath>$(DllFolder)\System.ComponentModel.Composition.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Configuration">
+      <HintPath>$(DllFolder)\System.Configuration.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Core">
+      <HintPath>$(DllFolder)\System.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data">
+      <HintPath>$(DllFolder)\System.Data.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <HintPath>$(DllFolder)\System.Data.DataSetExtensions.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <HintPath>$(DllFolder)\System.Drawing.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.EnterpriseServices">
+      <HintPath>$(DllFolder)\System.EnterpriseServices.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.IO.Compression">
+      <HintPath>$(DllFolder)\System.IO.Compression.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.IO.Compression.FileSystem">
+      <HintPath>$(DllFolder)\System.IO.Compression.FileSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Net.Http">
+      <HintPath>$(DllFolder)\System.Net.Http.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Numerics">
+      <HintPath>$(DllFolder)\System.Numerics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>$(DllFolder)\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <HintPath>$(DllFolder)\System.Runtime.Serialization.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Security">
+      <HintPath>$(DllFolder)\System.Security.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.ServiceModel.Internals">
+      <HintPath>$(DllFolder)\System.ServiceModel.Internals.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Transactions">
+      <HintPath>$(DllFolder)\System.Transactions.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml">
+      <HintPath>$(DllFolder)\System.Xml.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <HintPath>$(DllFolder)\System.Xml.Linq.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -64,13 +146,11 @@
     <Optimize>true</Optimize>
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
-  
-  <!-- 模组构建后事件 -->
-  <Target Name="CopyModToDevFolder" AfterTargets="Build" Condition="'$(ModOutputPath)' != '' And Exists('$(ModOutputPath)')">
+    <!-- 模组构建后事件（已禁用 - 由Directory.targets处理） -->
+  <Target Name="CopyModToDevFolder_Disabled" AfterTargets="Build" Condition="'false'">
     <ItemGroup>
-      <ModFiles Include="$(TargetDir)\**\*.*" />
+      <ModFiles Include="$(TargetDir)\$(AssemblyName).dll" />
     </ItemGroup>
-    <Message Text="正在复制 $(AssemblyName) 到开发模组文件夹: $(ModOutputPath)" Importance="high" />
-    <Copy SourceFiles="@(ModFiles)" DestinationFiles="@(ModFiles->'$(ModOutputPath)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Message Text="此目标已被禁用 - 由Directory.targets处理文件复制" Importance="high" />
   </Target>
 </Project>
