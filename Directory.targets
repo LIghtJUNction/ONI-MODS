@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- 构建后操作 - 复制模组文件到游戏目录 -->
+  <Target Name="AfterBuild">
+    <PropertyGroup>
+      <ModFolder>$(ModOutputPath)</ModFolder>
+    </PropertyGroup>
+    
+    <!-- 创建模组目录结构 -->
+    <MakeDir Directories="$(ModFolder)" Condition="!Exists('$(ModFolder)')" />
+    <MakeDir Directories="$(ModFolder)\bin" Condition="!Exists('$(ModFolder)\bin')" />
+    
+    <!-- 复制输出文件 -->
+    <ItemGroup>
+      <ModFiles Include="$(TargetDir)\$(AssemblyName).dll" />
+      <ModFiles Include="$(ProjectDir)\mod_info.yaml" Condition="Exists('$(ProjectDir)\mod_info.yaml')" />
+      <ModFiles Include="$(ProjectDir)\mod.yaml" Condition="Exists('$(ProjectDir)\mod.yaml')" />
+    </ItemGroup>
+    
+    <!-- 复制模组所需的文件到模组目录 -->
+    <Copy SourceFiles="@(ModFiles)" DestinationFolder="$(ModFolder)\bin\" />
+    
+    <!-- 复制其它模组资源 -->
+    <ItemGroup>
+      <ModAssets Include="$(ProjectDir)\assets\**\*.*" Condition="Exists('$(ProjectDir)\assets')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ModAssets)" DestinationFolder="$(ModFolder)\assets\%(RecursiveDir)" Condition="@(ModAssets) != ''" />
+    
+    <!-- 复制翻译文件 -->
+    <ItemGroup>
+      <TranslationFiles Include="$(ProjectDir)\translations\**\*.po" Condition="Exists('$(ProjectDir)\translations')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(TranslationFiles)" DestinationFolder="$(ModFolder)\translations\%(RecursiveDir)" Condition="@(TranslationFiles) != ''" />
+    
+    <!-- 复制设置文件 -->
+    <ItemGroup>
+      <ConfigFiles Include="$(ProjectDir)\config\**\*.*" Condition="Exists('$(ProjectDir)\config')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(ModFolder)\config\%(RecursiveDir)" Condition="@(ConfigFiles) != ''" />
+    
+    <Message Text="已将模组文件复制到: $(ModFolder)" Importance="high" />
+  </Target>
+  
+  <!-- 清理目标 -->
+  <Target Name="CleanMod">
+    <RemoveDir Directories="$(ModOutputPath)" Condition="Exists('$(ModOutputPath)')" />
+    <Message Text="已清理模组目录: $(ModOutputPath)" Importance="high" />
+  </Target>
+</Project>

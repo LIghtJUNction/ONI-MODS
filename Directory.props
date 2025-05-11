@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- 用户级别配置 - 可根据自己的环境修改 -->
+  
+  <!-- 游戏安装路径 -->
+  <!-- 下面是Steam的默认安装路径, 根据您的实际安装位置进行修改 -->  <PropertyGroup>
+    <GameFolder Condition=" '$(GameFolder)' == '' ">G:\LIghtJUNction\steam\SteamLibrary\steamapps\common\OxygenNotIncluded</GameFolder>
+    <DllFolder Condition=" '$(DllFolder)' == '' ">$(GameFolder)\OxygenNotIncluded_Data\Managed</DllFolder>
+
+    <!-- 模组输出路径 - 本地测试用 -->
+    <ModOutputPath Condition=" '$(ModOutputPath)' == '' ">$(USERPROFILE)\Documents\Klei\OxygenNotIncluded\mods\Dev\$(AssemblyName)</ModOutputPath>
+    
+    <!-- 模组加载器位置 -->
+    <ModLoaderPath Condition=" '$(ModLoaderPath)' == '' ">$(GameFolder)\OxygenNotIncluded_Data\Managed\Harmony.dll</ModLoaderPath>
+  </PropertyGroup>
+
+  <!-- 常用引用 -->
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(DllFolder)\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>$(DllFolder)\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(DllFolder)\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(DllFolder)\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(DllFolder)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(DllFolder)\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  
+  <!-- 编译配置 -->
+  <PropertyGroup>
+    <TargetFramework>net471</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+  
+  <!-- 调试配置 -->
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  
+  <!-- 发布配置 -->
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  
+  <!-- 模组构建后事件 -->
+  <Target Name="CopyModToDevFolder" AfterTargets="Build" Condition="'$(ModOutputPath)' != '' And Exists('$(ModOutputPath)')">
+    <ItemGroup>
+      <ModFiles Include="$(TargetDir)\**\*.*" />
+    </ItemGroup>
+    <Message Text="正在复制 $(AssemblyName) 到开发模组文件夹: $(ModOutputPath)" Importance="high" />
+    <Copy SourceFiles="@(ModFiles)" DestinationFiles="@(ModFiles->'$(ModOutputPath)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+</Project>

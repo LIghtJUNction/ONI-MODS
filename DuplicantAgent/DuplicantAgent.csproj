@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)\Directory.props" />
+  
+  <PropertyGroup>
+    <AssemblyName>DuplicantAgent</AssemblyName>
+    <Version>1.0.0</Version>
+    <TargetFramework>net471</TargetFramework>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin\$(Configuration)</OutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 在这里可以添加项目特定的引用 -->
+  </ItemGroup>
+
+  <Import Project="$(SolutionDir)\Directory.targets" />
+</Project>
