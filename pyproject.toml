@@ -1,0 +1,17 @@
+[project]
+name = "oni-mods"
+version = "0.1.0"
+description = "mods for Oxygen Not Included"
+readme = "README.md"
+authors = [
+    { name = "LIghtJUNction", email = "LIghtJUNction.me@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+oni-mods = "oni_mods.cli.__main__:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
