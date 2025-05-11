@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>Stock Bug Fix</AssemblyTitle>
+    <FileVersion>4.9.0.0</FileVersion>
+    <RootNamespace>PeterHan.StockBugFix</RootNamespace>
+    <Description>Fixes bugs and annoyances in the stock game.</Description>
+    <AssemblyVersion>3.3.0.0</AssemblyVersion>
+    <CopyPreview>true</CopyPreview>
+    <LastWorkingBuild>642443</LastWorkingBuild>
+    <Platforms>Vanilla;Mergedown</Platforms>
+  </PropertyGroup>
+</Project>

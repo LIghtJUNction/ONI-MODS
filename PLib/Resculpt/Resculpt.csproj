@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>Resculpt</AssemblyTitle>
+    <FileVersion>3.4.0.0</FileVersion>
+    <RootNamespace>PeterHan.Resculpt</RootNamespace>
+    <Description>Allows the design of sculpting blocks and paintings to be changed without reconstructing them.</Description>
+    <AssemblyVersion>3.1.0.0</AssemblyVersion>
+    <LastWorkingBuild>526233</LastWorkingBuild>
+    <Platforms>Vanilla;Mergedown</Platforms>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="repaint.png" />
+    <None Remove="resculpt.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="repaint.png" />
+    <EmbeddedResource Include="resculpt.png" />
+  </ItemGroup>
+</Project>

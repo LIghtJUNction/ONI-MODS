@@ -1,0 +1,19 @@
+biomeNoise: noise/subworldJungle
+temperatureRange: 25
+density:
+  min: 10
+  max: 15
+avoidRadius: 15.0
+doAvoidPoints: false
+dontRelaxChildren: true
+sampleBehaviour: PoissonDisk
+biomes:
+  - name: biomes/Jungle/Frigid
+    weight: 1
+    tags:
+      - SwampLilySeed
+      - SpiceVineSeed
+      - LeafyPlantSeed
+tags:
+  - IgnoreCaveOverride
+zoneType: ToxicJungle

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>ResourcesInMotion</AssemblyTitle>
+    <FileVersion>1.3.0.0</FileVersion>
+    <RootNamespace>PeterHan.ResourcesInMotion</RootNamespace>
+    <Description>Saves and restores the state of doors across reloads.</Description>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <SupportedContent>VANILLA_ID</SupportedContent>
+    <LastWorkingBuild>471618</LastWorkingBuild>
+    <Platforms>Vanilla</Platforms>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,16 @@
+biomeNoise: noise/subworldOcean
+temperatureRange: 25
+density:
+  min: 10
+  max: 15
+avoidRadius: 20.0
+minChildCount: 4
+sampleBehaviour: PoissonDisk
+biomes:
+  - name: biomes/Ocean/Frigid
+    tags:
+      - SeaLettuceSeed
+      - SpiceVineSeed
+tags:
+  - IgnoreCaveOverride
+zoneType: Ocean

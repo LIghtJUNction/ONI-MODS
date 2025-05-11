@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>Clean Drop</AssemblyTitle>
+    <FileVersion>2.2.0.0</FileVersion>
+    <RootNamespace>PeterHan.CleanDrop</RootNamespace>
+    <Description>Drops materials from build, deconstruct, or repair errands in a place where the working Duplicant can usually access them.</Description>
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <LastWorkingBuild>493472</LastWorkingBuild>
+    <Platforms>Vanilla;Mergedown</Platforms>
+  </PropertyGroup>
+</Project>

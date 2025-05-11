@@ -1,0 +1,298 @@
+﻿/*
+ * Copyright 2024 Peter Han
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+using HarmonyLib;
+using PeterHan.PLib.Core;
+using System.Collections.Generic;
+using System.Reflection;
+
+namespace PeterHan.FastTrack {
+	/// <summary>
+	/// Updates LoopingSoundManager and AmbienceManager on alternating frames at about 5 FPS.
+	/// </summary>
+	[SkipSaveFileSerialization]
+	internal sealed class SoundUpdater : KMonoBehaviour, IRender200ms {
+		/// <summary>
+		/// The player preference value for the ambience volume.
+		/// </summary>
+		public static readonly string VOLUME_AMBIENCE = "Volume_" + STRINGS.UI.FRONTEND.
+			AUDIO_OPTIONS_SCREEN.AUDIO_BUS_AMBIENCE;
+
+		/// <summary>
+		/// The player preference value for the master volume.
+		/// </summary>
+		public static readonly string VOLUME_MASTER = "Volume_" + STRINGS.UI.FRONTEND.
+			AUDIO_OPTIONS_SCREEN.AUDIO_BUS_MASTER;
+
+		/// <summary>
+		/// The player preference value for the music volume.
+		/// </summary>
+		public static readonly string VOLUME_MUSIC = "Volume_" + STRINGS.UI.FRONTEND.
+			AUDIO_OPTIONS_SCREEN.AUDIO_BUS_MUSIC;
+
+		/// <summary>
+		/// The player preference value for the SFX volume.
+		/// </summary>
+		public static readonly string VOLUME_SFX = "Volume_" + STRINGS.UI.FRONTEND.
+			AUDIO_OPTIONS_SCREEN.AUDIO_BUS_MASTER;
+
+		/// <summary>
+		/// The player preference value for the UI volume.
+		/// </summary>
+		public static readonly string VOLUME_UI = "Volume_" + STRINGS.UI.FRONTEND.
+			AUDIO_OPTIONS_SCREEN.AUDIO_BUS_UI;
+
+		/// <summary>
+		/// Whether the ambience manager's update should run the next time.
+		/// </summary>
+		private static bool runAmbience = !FastTrackOptions.Instance.DisableSound;
+
+		/// <summary>
+		/// Whether the mix manager's update should run the next time.
+		/// </summary>
+		private static bool runMix = !FastTrackOptions.Instance.DisableSound;
+
+		/// <summary>
+		/// A coroutine that waits one frame, then allows AmbienceManager to run.
+		/// </summary>
+		private static System.Collections.IEnumerator RunAmbienceNextFrame() {
+			yield return null;
+			runAmbience = true;
+		}
+
+		public override void OnSpawn() {
+			base.OnSpawn();
+			runAmbience = false;
+			runMix = false;
+		}
+
+		public void Render200ms(float dt) {
+			if (KPlayerPrefs.GetFloat(VOLUME_MASTER, 1.0f) > 0.0f && !FastTrackOptions.
+					Instance.DisableSound) {
+				if (KPlayerPrefs.GetFloat(VOLUME_AMBIENCE, 1.0f) > 0.0f) {
+					StartCoroutine(RunAmbienceNextFrame());
+					runMix = true;
+				} else
+					runMix = false;
+			}
+		}
+
+		/// <summary>
+		/// Applied to AmbienceManager to reduce its updates to the same speed as sound
+		/// updates.
+		/// </summary>
+		[HarmonyPatch(typeof(AmbienceManager), nameof(AmbienceManager.LateUpdate))]
+		public static class AmbienceManagerUpdater {
+			internal static bool Prepare() {
+				var options = FastTrackOptions.Instance;
+				return options.DisableSound || options.ReduceSoundUpdates;
+			}
+
+			/// <summary>
+			/// Applied before LateUpdate runs.
+			/// </summary>
+			[HarmonyPriority(Priority.Low)]
+			internal static bool Prefix() {
+				bool shouldRunAmbience = runAmbience;
+				runAmbience = false;
+				return shouldRunAmbience;
+			}
+		}
+
+		/// <summary>
+		/// Applied to LoopingSoundManager to reduce sound updates to every other frame.
+		/// </summary>
+		[HarmonyPatch(typeof(LoopingSoundManager), nameof(LoopingSoundManager.
+			RenderEveryTick))]
+		public static class LoopingSoundManagerUpdater {
+			internal static bool Prepare() {
+				var options = FastTrackOptions.Instance;
+				return options.DisableSound || options.ReduceSoundUpdates;
+			}
+
+			/// <summary>
+			/// Whether looping sounds should be updated this frame.
+			/// </summary>
+			private static bool runLooping;
+
+			/// <summary>
+			/// Applied before RenderEveryTick runs.
+			/// </summary>
+			[HarmonyPriority(Priority.Low)]
+			internal static bool Prefix() {
+				bool shouldRunLooping = runLooping;
+				runLooping = !runLooping;
+				return shouldRunLooping;
+			}
+		}
+
+		/// <summary>
+		/// Applied to MixManager to reduce sound updates to 5 FPS.
+		/// </summary>
+		[HarmonyPatch(typeof(MixManager), nameof(MixManager.Update))]
+		public static class MixManagerUpdater {
+			internal static bool Prepare() {
+				var options = FastTrackOptions.Instance;
+				return options.DisableSound || options.ReduceSoundUpdates;
+			}
+
+			/// <summary>
+			/// Applied before Update runs.
+			/// </summary>
+			[HarmonyPriority(Priority.Low)]
+			internal static bool Prefix() {
+				bool shouldRunMix = runMix;
+				runMix = false;
+				return shouldRunMix;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Applied to CameraController to never say sounds are audible when sound is off.
+	/// </summary>
+	[HarmonyPatch(typeof(CameraController), nameof(CameraController.IsAudibleSound),
+		typeof(UnityEngine.Vector2))]
+	public static class CameraController_IsAudibleSoundV2_Patch {
+		internal static bool Prepare() => FastTrackOptions.Instance.DisableSound;
+
+		/// <summary>
+		/// Applied before IsAudibleSound runs.
+		/// </summary>
+		[HarmonyPriority(Priority.Low)]
+		internal static bool Prefix(ref bool __result) {
+			__result = false;
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// Applied to CameraController to never say sounds are audible when sound is off.
+	/// </summary>
+	[HarmonyPatch(typeof(CameraController), nameof(CameraController.IsAudibleSound),
+		typeof(UnityEngine.Vector3), typeof(HashedString))]
+	public static class CameraController_IsAudibleSoundV3_Patch {
+		internal static bool Prepare() => FastTrackOptions.Instance.DisableSound;
+
+		/// <summary>
+		/// Applied before IsAudibleSound runs.
+		/// </summary>
+		[HarmonyPriority(Priority.Low)]
+		internal static bool Prefix(ref bool __result) {
+			__result = false;
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// Applied to NotificationScreen to suppress sounds queued very early in the load.
+	/// sequence.
+	/// </summary>
+	[HarmonyPatch(typeof(NotificationScreen), nameof(NotificationScreen.PlayDingSound))]
+	public static class NotificationScreen_PlayDingSound_Patch {
+		internal static bool Prepare() => FastTrackOptions.Instance.ReduceSoundUpdates;
+
+		/// <summary>
+		/// Applied before PlayDingSound runs.
+		/// </summary>
+		[HarmonyPriority(Priority.Low)]
+		internal static bool Prefix(Notification notification,
+				IDictionary<NotificationType, string> ___notificationSounds) {
+			// No const for that sound name
+			return notification == null || FastTrackMod.GameRunning ||
+				!___notificationSounds.TryGetValue(notification.Type, out string sound) ||
+				sound != "Notification";
+		}
+	}
+
+	/// <summary>
+	/// Applied to MusicManager to turn off music updates when sound is disabled.
+	/// </summary>
+	[HarmonyPatch]
+	public static class MusicManager_Play_Patch {
+		internal static bool Prepare() {
+			var options = FastTrackOptions.Instance;
+			return options.DisableSound || options.ReduceSoundUpdates;
+		}
+
+		internal static IEnumerable<MethodBase> TargetMethods() {
+			yield return typeof(MusicManager).GetMethodSafe(nameof(MusicManager.
+				PlayDynamicMusic), false);
+			yield return typeof(MusicManager).GetMethodSafe(nameof(MusicManager.PlaySong),
+				false, typeof(string), typeof(bool));
+		}
+
+		/// <summary>
+		/// Applied before these methods run.
+		/// </summary>
+		[HarmonyPriority(Priority.Low)]
+		internal static bool Prefix() {
+			var options = FastTrackOptions.Instance;
+			return !options.DisableSound && KPlayerPrefs.GetFloat(SoundUpdater.VOLUME_MUSIC,
+				1.0f) > 0.0f && KPlayerPrefs.GetFloat(SoundUpdater.VOLUME_MASTER, 1.0f) > 0.0f;
+		}
+	}
+
+	/// <summary>
+	/// Applied to multiple classes to turn off sound completely.
+	/// </summary>
+	[HarmonyPatch]
+	public static class TurnOffSoundsPatch {
+		internal static bool Prepare() => FastTrackOptions.Instance.DisableSound;
+
+		internal static IEnumerable<MethodBase> TargetMethods() {
+			yield return typeof(AnimEventManager).GetMethodSafe(nameof(AnimEventManager.
+				PlayEvents), false, PPatchTools.AnyArguments);
+			yield return typeof(AnimEventManager).GetMethodSafe(nameof(AnimEventManager.
+				StopEvents), false, PPatchTools.AnyArguments);
+			yield return typeof(AudioMixer).GetMethodSafe(nameof(AudioMixer.
+				SetSnapshotParameter), false, typeof(string), typeof(string), typeof(float),
+				typeof(bool));
+			yield return typeof(AudioMixer).GetMethodSafe(nameof(AudioMixer.Start), false,
+				typeof(string));
+			yield return typeof(AudioMixer).GetMethodSafe(nameof(AudioMixer.Stop), false,
+				typeof(HashedString), typeof(FMOD.Studio.STOP_MODE));
+			yield return typeof(ConduitFlowVisualizer).GetMethodSafe(nameof(
+				ConduitFlowVisualizer.AddAudioSource), false, PPatchTools.AnyArguments);
+			yield return typeof(ConduitFlowVisualizer).GetMethodSafe(nameof(
+				ConduitFlowVisualizer.TriggerAudio), false, PPatchTools.AnyArguments);
+			yield return typeof(MusicManager).GetMethodSafe(nameof(MusicManager.StopSong),
+				false, PPatchTools.AnyArguments);
+			yield return typeof(KFMOD).GetMethodSafe(nameof(KFMOD.CreateInstance), true,
+				typeof(string));
+			yield return typeof(KFMOD).GetMethodSafe(nameof(KFMOD.Initialize), true,
+				PPatchTools.AnyArguments);
+			yield return typeof(KFMOD).GetMethodSafe(nameof(KFMOD.RenderEveryTick), true,
+				PPatchTools.AnyArguments);
+			yield return typeof(SolidConduitFlowVisualizer).GetMethodSafe(nameof(
+				SolidConduitFlowVisualizer.AddAudioSource), false, PPatchTools.AnyArguments);
+			yield return typeof(SolidConduitFlowVisualizer).GetMethodSafe(nameof(
+				SolidConduitFlowVisualizer.TriggerAudio), false, PPatchTools.AnyArguments);
+			yield return typeof(SoundEvent).GetMethodSafe(nameof(SoundEvent.PlaySound), false,
+				typeof(AnimEventManager.EventPlayerData), typeof(string));
+		}
+
+		/// <summary>
+		/// Applied before these methods run.
+		/// </summary>
+		[HarmonyPriority(Priority.Low)]
+		internal static bool Prefix() {
+			return false;
+		}
+	}
+}

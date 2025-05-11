@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>Settings Change Tool</AssemblyTitle>
+    <FileVersion>3.7.0.0</FileVersion>
+    <RootNamespace>PeterHan.BulkSettingsChange</RootNamespace>
+    <Description>Adds a tool to enable/disable disinfect, auto repair, compost, empty storage, or building operation in bulk.</Description>
+    <AssemblyVersion>3.2.0.0</AssemblyVersion>
+    <LastWorkingBuild>493472</LastWorkingBuild>
+    <Platforms>Vanilla;Mergedown</Platforms>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Placer.png" />
+    <None Remove="Toggle.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Placer.png" />
+    <EmbeddedResource Include="Toggle.png" />
+  </ItemGroup>
+</Project>
